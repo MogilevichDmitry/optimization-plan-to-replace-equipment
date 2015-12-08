@@ -4,26 +4,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace kursach
+namespace optimization
 {
     class Program
     {
+        public static double F_min(double t_k, double N, double n)
+        {
+            if ( t_k < N - n)
+            {
+                return t_k;
+            }
+            else
+            {
+                return N - n;
+            }
+        }
         static void Main(string[] args)
         {
             List<int> A_ikn = new List<int>(); // {0 or 1} первоначальный план
             List<int> Mi = new List<int>(); // {2,1,4}
             List<double> C_k = new List<double>(); //трудоемкость
-            List<double> MY_ik = new List<double>(); //время экспл.  на начало планового периода
-            List<double> L_k = new List<double>();
+            List<double> R_n = new List<double>();//коэф. коррект. трудоемкости
+            List<double> MY_ik = new List<double>();//время экспл.  на начало планового периода
+            List<int> L_k = new List<int>();
+            List<double> Vn = new List<double>();
+            List<int> B_ikn = new List<int>();
+            List<int> X_iknp = new List<int>();
+            List<double> t_1k = new List<double>();
+            List<double> t_2k = new List<double>();
+            double V_sr = 0;
             int n = 1; // единица планового периода
             int M; //кол-во типов различных устройств
             int N = 3; // кол-во единиц планового периода
-            M = Int32.Parse(Console.ReadLine());
-            int K; // тип устройства
-            double Vn = 0;// трудоемкость в n-ом интервале планового периода 
-            double Vn_s = 0; // средняя трудоемкость за весь плановый период
             int SumMachines = 0;// сумма устр-в
+            int s;
+            int ss;
+            double w;
+            double d;
+            Random rand = new Random();     // генерируем число от 0 до 1
+            double alpha;                   // по равномерному закону распределения
+            List<double> V_alpha = new List<double>();
+            M = Int32.Parse(Console.ReadLine());
 
+            /* п.1 */
             for (int i = 0; i < M; i++)// число устройств k-го типа
             {
                 int temp = Int32.Parse(Console.ReadLine());
@@ -31,10 +54,9 @@ namespace kursach
                 SumMachines += temp;
 
             }
-
             for (int i = 0; i < SumMachines; i++) // add L_k //add MY_ik // add Aikn
             {
-                double tempL_k = Double.Parse(Console.ReadLine());
+                int tempL_k = Int32.Parse(Console.ReadLine());
                 L_k.Add(tempL_k);
                 for (int j = 0; j < Mi[i]; j++)
                 {
@@ -48,165 +70,177 @@ namespace kursach
                     A_ikn.Add(tempAik);
                 }
             }
-            /*----------------(6)-------------*/
-            for (int i = 0; i < M; i++) // add C_k // Vn 
-            {
-                double tempC_k = Double.Parse(Console.ReadLine());
-                C_k.Add(tempC_k);
-                double tempSumAi = 0;
-                for (int j = 0; j < Mi[i]; j++)
-                {
-                    tempSumAi += A_ikn[j];
-                }
-                Vn += tempC_k * tempSumAi;// трудоемкость в n-ом интервале планового периода
-            }
-
+            double tempVn;
             for (int i = 0; i < N; i++)
             {
-                Vn_s += 1 / N * Vn; // средняя трудоемкость за весь период эксплуатации
+                tempVn = 0;
+                for (int j = 0; j < M; j++) // add C_k // Vn 
+                {
+                    double tempC_k = Double.Parse(Console.ReadLine());
+                    C_k.Add(tempC_k);
+                    double tempSumAi = 0;
+                    for (int q = 0; q < Mi[j]; q++)
+                    {
+                        tempSumAi += A_ikn[q];
+                    }
+                    tempVn += tempC_k * tempSumAi;// трудоемкость в n-ом интервале планового периода
+                }
+                Vn.Add(tempVn);
             }
-            /* ---------- составление нового плана -------------------*/
-            double Vn_b = 0; // трудоемкость в соответсвии с новым ПЗ 
-            List<int> X_iknj = new List<int>(); // [0;1]
-            List<double> t_1k = new List<double>(); //предельный допуск на уменьшение срока замены 
-            List<double> t_2k = new List<double>();//предельный допуск на увеличение срока замены 
-            for ( int i = 0; i < M; i ++) 
+            tempVn = 0;
+            for (int i = 0; i < N; i++)
             {
-                t_1k.Add(Double.Parse(Console.ReadLine()));
-                t_2k.Add(Double.Parse(Console.ReadLine()));
-
+                tempVn += Vn[i];
             }
-            List<double> J_kn_max = new List<double>();
-            List<double> J_kn_min = new List<double>();
-            List<double> S_kn = new List<double>();
-            List<double> S_kn_2 = new List<double>();
-            List<double> T_kn_max = new List<double>();
-            List<double> T_kn_min = new List<double>();
-
-            List<int> B_ikn = new List<int>();
-            for( int i = 0;  i < A_ikn.Count + 1; i++) // первоначально  B_ikn = A_ikn 
+            V_sr = 1 / N * tempVn;//средняя трудоемкость 
+            for (int i = 0; i < A_ikn.Count; i++) 
             {
                 B_ikn.Add(A_ikn[i]);
             }
-            /* ---------------------Xiknp --------------*/
             for (int p = 0; p < N; p++)
             {
-                if ( p == n)
+                if (p == n) //????
                 {
-                    X_iknj.Add(1);
+                    X_iknp.Add(A_ikn[p]);
                 }
                 else
                 {
-                    X_iknj.Add(0);
+                    X_iknp.Add(0);
                 }
-
             }
-            
-            /*-------------- Jkn(1)-------------------*/
-            for ( int i = 0; i < M; i++)
+            for (int i = 0; i < N - 1; i++)
             {
-                if ( n - t_1k[i] > 1)
-                {
-                    J_kn_max.Add(n - t_1k[i]);
-                }
-                else
-                {
-                    J_kn_max.Add(1);
-                }
+                double tempR_n = Double.Parse(Console.ReadLine());
+                R_n.Add(tempR_n);
             }
-            /*-------------- Jkn(2)-------------------*/
-            for (int i = 0; i < M; i++)
-            {
-                if (n + t_2k[i] < N)
-                {
-                    J_kn_min.Add(n + t_2k[i]);
-                }
-                else
-                {
-                    J_kn_min.Add(N);
-                }
-            }
-            /*-------------- Skn(1)-------------------*/
             for ( int i = 0; i < M; i++ )
             {
-                if (n - t_1k[i] - L_k[i] > 1)
-                {
-                    S_kn.Add(n - t_1k[i] - L_k[i]);
-                }
-                else
-                {
-                    S_kn.Add(1);
-                }
+                double tempt1_k = Double.Parse(Console.ReadLine());
+                t_1k.Add(tempt1_k);
+                double tempt2_k = Double.Parse(Console.ReadLine());
+                t_2k.Add(tempt2_k);
             }
-            /*-------------- Skn(2)-------------------*/
-            for (int i = 0; i< M; i++)
+            /* п.2 */
+            for (int k = 0; k < M; k++) 
             {
-                S_kn_2.Add(n + t_1k[i] - L_k[i]);
-            }
-            /*---------------------- (11 ДОБАВИТЬ!!!)-----------------------*/
-            /*---------------------- (11 ДОБАВИТЬ!!!)-----------------------*/
-            /*---------------------- (11 ДОБАВИТЬ!!!)-----------------------*/
-
-            /*--------------------- Tkn(1)---------------------*/
-            for ( int i = 0; i < M; i++)
-            {
-                if (n - t_2k[i] > 1)
+                /* п.3 */
+                for (n = 0; n < N - 1; n++)
                 {
-                    T_kn_max.Add(n - t_2k[i]);
-                }
-                else
-                {
-                    T_kn_max.Add(1);
-                }
-            }
-            /*--------------------- Tkn(2)---------------------*/
-            for (int i = 0; i < M; i++)
-            {
-                if (n + t_1k[i] < N)
-                {
-                    T_kn_min.Add(n + t_1k[i]);
-                }
-                else
-                {
-                    T_kn_min.Add(N);
-                }
-            }
-            /*------------------ (12) ПЕРЕДЕЛАТЬ!!!!!!!-------------*/
-            int tempX_ikn;
-            for( int i = 0; i < M; i++)
-            {
-                tempX_ikn = 0;
-                for ( int j = ((int)T_kn_max[i]); j < (int)(T_kn_min[i]); j++ )
-                {
-                    tempX_ikn += tempX_ikn;
-                }
-                B_ikn.Add(tempX_ikn);
-            }
-            List<double> R_n = new List<double>();// коэф. корректировки трудоемкости
-            for ( int i = 0; i < N; i++) 
-            {
-                R_n.Add(Double.Parse(Console.ReadLine()));
-            }
-           
-            double tempSum1 = 0;
-            double tempSum2 = 0;
-            double F_B = 0;
-            /*-----------------(13)----------------*/
-            for ( int i = 0; i < N; i++)
-            {
-                tempSum2 = 0;
-                for( int j = 0; j < M; j++)
-                {
-                    tempSum1 = 0;
-                    for (int k = 0; k < Mi[j]; k++)
+                    /* п.4 */
+                    s = (int)(V_sr * R_n[n] / C_k[k]);
+                    ss = (int)((V_sr * R_n[n]) % C_k[k]);
+                    alpha = rand.NextDouble();
+                    if (alpha > s - ss)
                     {
-                        tempSum1 += C_k[j] * B_ikn[k];
+                        V_alpha.Add(ss * C_k[k]);
                     }
-                    tempSum2 += tempSum1;
+                    else
+                    {
+                        V_alpha.Add((ss + 1) * C_k[k]);
+                    }
+                    w = V_alpha[n] * R_n[n] - Vn[n];
+                    while (Math.Abs(w) < C_k[k])
+                    {
+                        //перейти к п.3 +++
+                        n++;
+                        s = (int)(V_sr * R_n[n] / C_k[k]);
+                        ss = (int)((V_sr * R_n[n]) % C_k[k]);
+                        alpha = rand.NextDouble();
+                        if (alpha > s - ss)
+                        {
+                            V_alpha.Add(ss * C_k[k]);
+                        }
+                        else
+                        {
+                            V_alpha.Add((ss + 1) * C_k[k]);
+                        }
+                        w = V_alpha[n] * R_n[n] - Vn[n];
+                    }
+                    if (w > 0)
+                    {
+                        //перейти к п.5 
+                    }
+                    else if (w <= 0)
+                    {
+                        //перейти к п.8
+                    }
+                    /* п.5  */
+                    for ( int j = 0; j < F_min(t_1k[k],N, n); j++)
+                    {
+                        /* п.6 */
+                        for (int i = 0; i < Mi[k]; i++) //????
+                        {
+                            /* п.7 */
+                            while (B_ikn[n] == 1 || B_ikn[n + j] == 0) 
+                            {
+                                for (int lambda = n; lambda < N; lambda += L_k[k]) 
+                                {
+                                    B_ikn[lambda] = 1;
+                                    V_alpha[lambda] = V_alpha[lambda] + C_k[k]; // ????
+                                }
+                                for (int lambda = n + j; lambda < N; lambda += L_k[k])
+                                {
+                                    X_iknp[lambda] = 0;
+                                    X_iknp[lambda - j] = 1;
+                                    B_ikn[lambda] = 0;
+                                    V_alpha[lambda] = V_alpha[lambda] - C_k[k];
+                                }
+                                d = w - C_k[k];
+                                if (d < C_k[k])
+                                {
+                                    //перейти к п.3 
+                                }
+                                else
+                                {
+                                    w = d;
+                                }
+                                break; //перейти к п.6 +++
+                            }
+                            /* п. 8 */
+                            for (i = 0; i < Mi[k]; i++)
+                            {
+                                /* п. 9 */
+                                for (j = 1; j < F_min(t_2k[k], N, n); j++)
+                                {
+                                    if (B_ikn[n] == 0)
+                                    {
+                                        //перейти к п.8
+                                    }
+                                    else
+                                    {
+                                        while (X_iknp[n + j - 1] == 0)
+                                        {
+                                            //перейти к п.9 
+                                            break;//????????????
+                                        }
+                                        d = w + C_k[k];
+                                    }
+                                    for (int lambda = n + 1; lambda < N; lambda += L_k[k])
+                                    {
+                                        X_iknp[lambda + j] = 1;
+                                        B_ikn[lambda] = 1;
+                                        V_alpha[lambda] = V_alpha[lambda] + C_k[k];
+                                    }
+                                    for (int lambda = n; lambda < N; lambda += L_k[k])
+                                    {
+                                        X_iknp[lambda - 1] = 0;
+                                        B_ikn[lambda] = 0;
+                                        V_alpha[lambda] = V_alpha[lambda] - C_k[k];
+                                    }
+                                    if (d < C_k[k]) // ????
+                                    { 
+                                        //перейти к п.3
+                                    }
+                                    else
+                                    {
+                                        w = d;
+                                    }                                    
+                                }
+                            }
+                        }
+                    }
                 }
-                F_B += (tempSum2 - R_n[i] * Vn_s) * (tempSum2 - R_n[i] * Vn_s);
-            }
-
+            }            
         }
     }
 }
