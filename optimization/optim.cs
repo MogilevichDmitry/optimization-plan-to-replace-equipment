@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace optimization
 {
-    class Program
+    class optim
     {
         public static double F_min(double t_k, double N, double n)
         {
