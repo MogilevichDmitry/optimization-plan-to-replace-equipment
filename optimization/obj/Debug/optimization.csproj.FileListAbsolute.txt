@@ -1,6 +1,0 @@
-F:\visual studio solutions\kursach\optimization\bin\Debug\optimization.exe.config
-F:\visual studio solutions\kursach\optimization\bin\Debug\optimization.exe
-F:\visual studio solutions\kursach\optimization\bin\Debug\optimization.pdb
-F:\visual studio solutions\kursach\optimization\obj\Debug\optimization.csprojResolveAssemblyReference.cache
-F:\visual studio solutions\kursach\optimization\obj\Debug\optimization.exe
-F:\visual studio solutions\kursach\optimization\obj\Debug\optimization.pdb

@@ -1,6 +1,0 @@
-F:\visual studio solutions\kursach\kursach\bin\Debug\kursach.exe.config
-F:\visual studio solutions\kursach\kursach\obj\Debug\kursach.csprojResolveAssemblyReference.cache
-F:\visual studio solutions\kursach\kursach\bin\Debug\kursach.exe
-F:\visual studio solutions\kursach\kursach\bin\Debug\kursach.pdb
-F:\visual studio solutions\kursach\kursach\obj\Debug\kursach.exe
-F:\visual studio solutions\kursach\kursach\obj\Debug\kursach.pdb
